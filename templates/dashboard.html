@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Performance Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+{% set subjects = {
+    '18': 'Computer Science',
+    '19': 'Mathematics',
+    '17': 'Science',
+    '23': 'History'
+} %}
+
+<h2>Performance Dashboard</h2>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Subject</th>
+        <th>Difficulty</th>
+        <th>Score</th>
+        <th>Percentage</th>
+    </tr>
+
+    {% for row in records %}
+    <tr>
+        <td>{{ subjects.get(row[0], 'Unknown') }}</td>
+        <td>{{ row[1] }}</td>
+        <td>{{ row[2] }}/{{ row[3] }}</td>
+        <td>{{ (row[2] / row[3]) * 100 }}%</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+<a href="/">Take Another Assessment</a>
+
+</body>
+</html>

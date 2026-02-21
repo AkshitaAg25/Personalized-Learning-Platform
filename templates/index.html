@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index</title>
+    <link rel = "stylesheet" href = "static/style.css">
+</head>
+<body>
+    <form action="/quiz" method="GET">
+
+    <label>Subject:</label>
+    <select name="subject" required>
+        <option value="Computer Science" data-category="18">Computer Science</option>
+        <option value="Mathematics" data-category="19">Mathematics</option>
+        <option value="Science" data-category="17">Science</option>
+        <option value="History" data-category="23">History</option>
+    </select>
+
+    <input type="hidden" name="category" id="category">
+
+    <br><br>
+
+    <label>Difficulty:</label>
+    <select name="difficulty" required>
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+    </select>
+
+    <br><br>
+
+    <button type="submit">Start Assessment</button>
+</form>
+
+<script>
+    const subjectSelect = document.querySelector("select[name='subject']");
+    const categoryInput = document.getElementById("category");
+
+    function updateCategory() {
+        const selectedOption = subjectSelect.options[subjectSelect.selectedIndex];
+        categoryInput.value = selectedOption.getAttribute("data-category");
+    }
+
+    subjectSelect.addEventListener("change", updateCategory);
+    updateCategory();
+</script>
+
+</body>
+</html>

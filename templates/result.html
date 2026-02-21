@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Result</title>
+</head>
+<body>
+
+<h2>Quiz Result</h2>
+<p>Your Score: <strong>{{ score }}/{{ total }}</strong></p>
+
+{% if score >= 4 %}
+    <p>Level: Advanced</p>
+{% elif score >= 2 %}
+    <p>Level: Intermediate</p>
+{% else %}
+    <p>Level: Beginner</p>
+{% endif %}
+<a href="/dashboard">View Performance Dashboard</a>
+
+<a href="/">Go Back</a>
+
+</body>
+</html>
