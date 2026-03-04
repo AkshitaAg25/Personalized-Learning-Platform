@@ -1,3 +1,4 @@
+{% extends 'base.html' %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,45 +7,29 @@
     <title>Index</title>
     <link rel = "stylesheet" href = "static/style.css">
 </head>
+
+{% block body %}
 <body>
-    <form action="/quiz" method="GET">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 100px 20px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #ffffff;">
 
-    <label>Subject:</label>
-    <select name="subject" required>
-        <option value="Computer Science" data-category="18">Computer Science</option>
-        <option value="Mathematics" data-category="19">Mathematics</option>
-        <option value="Science" data-category="17">Science</option>
-        <option value="History" data-category="23">History</option>
-    </select>
+    <div style="background-color: #f0ebff; color: #6f42c1; padding: 8px 18px; border-radius: 50px; font-size: 14px; font-weight: 600; margin-bottom: 30px; display: inline-block; border: 1px solid rgba(111, 66, 193, 0.1);">
+        <span style="margin-right: 5px;">✨</span> Next-Gen Study Tracking
+    </div>
 
-    <input type="hidden" name="category" id="category">
+    <h1 style="font-size: clamp(32px, 8vw, 72px); font-weight: 800; color: #0f172a; line-height: 1.1; margin: 0 0 24px 0; max-width: 900px;">
+        Bridge Your <span style="color: #7c4dff;">Learning Gaps</span> with AI
+    </h1>
 
-    <br><br>
+    <p style="font-size: 18px; color: #64748b; line-height: 1.6; margin-bottom: 40px; max-width: 650px;">
+        The only personalized platform that analyzes what you study, predicts what you'll forget, and recommends exactly what you need to master your next exam.
+    </p>
 
-    <label>Difficulty:</label>
-    <select name="difficulty" required>
-        <option value="easy">Easy</option>
-        <option value="medium">Medium</option>
-        <option value="hard">Hard</option>
-    </select>
+    <a href="/trialform" style="background-color: #0f172a; color: white; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 18px; display: inline-flex; align-items: center; transition: background 0.2s; box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.1);">
+        Start Studying Free 
+        <span style="margin-left: 10px; font-size: 20px;">→</span>
+    </a>
 
-    <br><br>
-
-    <button type="submit">Start Assessment</button>
-</form>
-
-<script>
-    const subjectSelect = document.querySelector("select[name='subject']");
-    const categoryInput = document.getElementById("category");
-
-    function updateCategory() {
-        const selectedOption = subjectSelect.options[subjectSelect.selectedIndex];
-        categoryInput.value = selectedOption.getAttribute("data-category");
-    }
-
-    subjectSelect.addEventListener("change", updateCategory);
-    updateCategory();
-</script>
-
+</div>
 </body>
+{% endblock body %}
 </html>

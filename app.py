@@ -8,6 +8,10 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
+@app.route("/trialform")
+def form():
+    return render_template("trialform.html")
+
 @app.route("/quiz")
 def quiz():
     subject = request.args.get("subject")
