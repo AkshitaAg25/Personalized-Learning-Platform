@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
 from services.question_api import fetch_questions
-
+from templates.geminiquizgenerate import fetch_questions_gemini
 
 app = Flask(__name__)
 
@@ -8,30 +8,36 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
-@app.route("/trialform")
+@app.route("/form")
 def form():
-    return render_template("trialform.html")
+    return render_template("form.html")
 
-@app.route("/quiz")
+@app.route("/quiz", methods=["GET", "POST"])
 def quiz():
-    subject = request.args.get("subject")
-    category = request.args.get("category")
-    difficulty = request.args.get("difficulty")
+    if request.method == "POST":
+        # This handles the data when the user clicks the "Generate" button
+        subject = request.form.get("subject")
+        mastered = request.form.get("mastered")
+        focus = request.form.get("focus")
+    else:
+        # This handles when someone just types the URL in directly
+        subject = request.args.get("subject")
+        mastered = request.args.get("mastered")
+        focus = request.args.get("focus")
 
-    questions = fetch_questions(
-        amount=5,
-        category=category,
-        difficulty=difficulty
+    #calling Gemini function
+    questions = fetch_questions_gemini(
+        subject=subject,
+        mastered=mastered,
+        focus=focus
     )
 
     return render_template(
-        "quiz.html",
+        "geminiquizquestion.html",
         questions=questions,
         subject=subject,
-        difficulty=difficulty
+        focus=focus
     )
-
-
 
 @app.route("/submit-quiz", methods=["POST"])
 def submit_quiz():

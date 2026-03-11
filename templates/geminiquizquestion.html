@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        h2 {
+            color: #6a1b9a;
+            text-align: center;
+        }
+
+        .question-box {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 5px solid #6a1b9a;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 5px;
+            transition: background 0.3s;
+        }
+
+        label:hover {
+            background: #f3e5f5;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #6a1b9a;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #4a148c;
+        }
+
+        /* Update your CSS to this */
+.option-wrapper {
+    display: block;
+    margin: 8px 0;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.option-wrapper:hover {
+    background-color: #f3e5f5;
+    border-color: #6a1b9a;
+}
+
+/* Ensure the radio button is always clickable */
+.option-wrapper input {
+    margin-right: 10px;
+    cursor: pointer;
+}
+    </style>
+</head>
+
+<body>
+    <h2>Assessment</h2>
+    <form method="POST" action="/submit-quiz">
+        <input type="hidden" name="subject" value="{{ subject }}">
+        <input type="hidden" name="difficulty" value="{{ difficulty }}">
+
+<!-- <div class="question-box">
+    <p>1. Test Question 1</p>
+    <label><input type="radio" name="q1" value="A"> A</label>
+    <label><input type="radio" name="q1" value="B"> B</label>
+</div>
+
+<div class="question-box">
+    <p>2. Test Question 2</p>
+    <label><input type="radio" name="q2" value="A"> A</label>
+    <label><input type="radio" name="q2" value="B"> B</label>
+</div> -->
+
+        {% for q in questions %}
+        <div class="question-box">
+            <p><strong>{{ loop.index }}. {{ q.question }}</strong></p>
+
+            {% for option in q.options %}
+                <label>
+                    <input type="radio" name="q{{ loop.index }}" id="q{{ loop.index }}_opt{{ loop.index0 }}" value="{{ option }}" required>
+                {{ option }}
+                </label>
+            {% endfor %}
+
+            <input type="hidden" name="correct{{ loop.index }}" value="{{ q.answer }}">
+        </div>
+        {% endfor %}
+
+        <button type="submit">Submit Quiz</button>
+    </form>
+</body>
+</html>
