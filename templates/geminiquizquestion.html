@@ -60,26 +60,26 @@
         }
 
         /* Update your CSS to this */
-.option-wrapper {
-    display: block;
-    margin: 8px 0;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
+        .option-wrapper {
+            display: block;
+            margin: 8px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
 
-.option-wrapper:hover {
-    background-color: #f3e5f5;
-    border-color: #6a1b9a;
-}
+        .option-wrapper:hover {
+            background-color: #f3e5f5;
+            border-color: #6a1b9a;
+        }
 
-/* Ensure the radio button is always clickable */
-.option-wrapper input {
-    margin-right: 10px;
-    cursor: pointer;
-}
+        /* Ensure the radio button is always clickable */
+        .option-wrapper input {
+            margin-right: 10px;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -89,32 +89,21 @@
         <input type="hidden" name="subject" value="{{ subject }}">
         <input type="hidden" name="difficulty" value="{{ difficulty }}">
 
-<!-- <div class="question-box">
-    <p>1. Test Question 1</p>
-    <label><input type="radio" name="q1" value="A"> A</label>
-    <label><input type="radio" name="q1" value="B"> B</label>
-</div>
-
-<div class="question-box">
-    <p>2. Test Question 2</p>
-    <label><input type="radio" name="q2" value="A"> A</label>
-    <label><input type="radio" name="q2" value="B"> B</label>
-</div> -->
 
         {% for q in questions %}
-        <div class="question-box">
-            <p><strong>{{ loop.index }}. {{ q.question }}</strong></p>
+        {% set q_index = loop.index0 %}
 
-            {% for option in q.options %}
-                <label>
-                    <input type="radio" name="q{{ loop.index }}" id="q{{ loop.index }}_opt{{ loop.index0 }}" value="{{ option }}" required>
-                {{ option }}
-                </label>
-            {% endfor %}
+            <div class="question-box">
+                <p><strong>{{ loop.index }}. {{ q.question }}</strong></p>
 
-            <input type="hidden" name="correct{{ loop.index }}" value="{{ q.answer }}">
-        </div>
-        {% endfor %}
+                {% for option in q.options %}
+                    <label>
+                        <input type="radio" name="q{{ q_index }}" value="{{ option }}" required>
+                        {{ option }}
+                    </label>
+                {% endfor %}
+            </div>
+    {% endfor %}
 
         <button type="submit">Submit Quiz</button>
     </form>
