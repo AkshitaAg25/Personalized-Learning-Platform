@@ -1,69 +1,33 @@
 {% extends 'base.html' %}
+{% block title %}New Quiz – MindMap{% endblock %}
 {% block body %}
-<body>
-<div style="font-family: 'Inter', sans-serif; background-color: #f8fafc; padding: 60px 20px; text-align: center;">
-    
-    <h2 style="font-size: 32px; font-weight: 800; color: #0f172a; margin-bottom: 10px;">Tailor your study experience</h2>
-    <p style="font-size: 16px; color: #64748b; margin-bottom: 40px;">Help our AI understand your goals, constraints, and learning style.</p>
+<div style="padding:60px 20px;background:linear-gradient(160deg,#f8f4ff,#fff);">
+  <div style="max-width:560px;margin:0 auto;text-align:center;">
+    <h2 class="fw-bold mb-2" style="color:var(--ink);">Tailor your quiz</h2>
+    <p class="text-muted mb-4">Tell our AI what you know and what you want to master.</p>
 
-    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.03); text-align: left;">
-
-<!-- getting user inputs -->
-<form action="/quiz" method="POST" style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 40px auto; padding: 30px; border-radius: 20px; background: white; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
- 
-    <div style="margin-bottom: 20px;">
-        <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Target Subject</label>
-        <input type="text" name="subject" placeholder="e.g. Organic Chemistry" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #f8fafc;">
+    <div class="card-mm p-4 text-start">
+      <form action="/quiz" method="POST">
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;text-transform:uppercase;color:#888;">Subject</label>
+          <input type="text" name="subject" class="form-control" placeholder="e.g. Machine Learning, Calculus, History" required
+                 style="border-radius:10px;padding:12px;border-color:var(--border);">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:13px;text-transform:uppercase;color:#888;">Topics Already Mastered</label>
+          <textarea name="mastered" class="form-control" rows="2" placeholder="e.g. Linear Regression, Python basics..."
+                    style="border-radius:10px;padding:12px;border-color:var(--border);resize:none;"></textarea>
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-semibold" style="font-size:13px;text-transform:uppercase;color:#888;">Focus Topic for Today</label>
+          <input type="text" name="focus" class="form-control" placeholder="e.g. Neural Networks, Recursion..."
+                 style="border-radius:10px;padding:12px;border-color:var(--border);">
+        </div>
+        <button type="submit" class="btn btn-purple w-100" style="padding:13px;font-size:15px;border-radius:12px;">
+          Generate Quiz 🔥
+        </button>
+      </form>
     </div>
-
-    <div style="margin-bottom: 20px;">
-        <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Previously Mastered Topics</label>
-        <textarea name="mastered" placeholder="List topics you already know..." style="width: 100%; height: 80px; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #f8fafc; resize: none;"></textarea>
-    </div>
-
-    <div style="margin-bottom: 25px;">
-        <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">Topic to Focus On Now</label>
-        <input type="text" name="focus" placeholder="What is your priority today?" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #f8fafc;">
-    </div>
-
-    <button type="submit" style="width: 100%; background: #6366f1; color: white; padding: 15px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;">
-        Generate Quiz 🔥
-    </button>
-</form>
-
-<script>
-    // 1. Initialize variables to hold your data
-    let userSubject = "";
-    let masteredTopics = "";
-    let focusTopic = "";
-
-    // 2. Select the elements
-    const subjectEl = document.getElementById('subjectInput');
-    const masteredEl = document.getElementById('masteredInput');
-    const focusEl = document.getElementById('focusInput');
-    const saveBtn = document.getElementById('saveBtn');
-
-    // 3. Create the update function
-    function updateStudyData() {
-        // Saving the current values of the inputs into our variables
-        userSubject = subjectEl.value;
-        masteredTopics = masteredEl.value;
-        focusTopic = focusEl.value;
-
-        // Logging to console to prove it's working
-        console.log("--- Data Saved ---");
-        console.log("Subject:", userSubject);
-        console.log("Mastered:", masteredTopics);
-        console.log("Focus:", focusTopic);
-        
-        alert("Study profile captured successfully!");
-    }
-
-    // 4. Trigger the save when the button is clicked
-    saveBtn.addEventListener('click', updateStudyData);
-</script>
-
+  </div>
 </div>
-</div>
-</body>
-{% endblock body %}
+{% endblock %}

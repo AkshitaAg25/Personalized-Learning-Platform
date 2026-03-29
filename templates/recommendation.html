@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}Learning Path – MindMap{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<style>
+  .step-card { background:#fff;border-radius:12px;padding:18px 20px;margin-bottom:12px;border-left:5px solid var(--purple);box-shadow:0 1px 5px rgba(0,0,0,0.06); }
+  .step-card.review    { border-color:#e53935; }
+  .step-card.learn     { border-color:#1e88e5; }
+  .step-card.practice  { border-color:#fb8c00; }
+  .step-card.challenge { border-color:#43a047; }
+  .action-tag { font-size:10px;border-radius:50px;padding:3px 10px;font-weight:700;text-transform:uppercase; }
+  .tag-review    { background:#ffebee;color:#c62828; }
+  .tag-learn     { background:#e3f2fd;color:#1565c0; }
+  .tag-practice  { background:#fff3e0;color:#e65100; }
+  .tag-challenge { background:#e8f5e9;color:#2e7d32; }
+  .resource-link { display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:#fafafa;border-radius:10px;margin-bottom:8px;text-decoration:none;color:inherit;border:1px solid var(--border);transition:.15s; }
+  .resource-link:hover { background:var(--purple-pale);border-color:var(--purple);color:inherit; }
+  .resource-type { font-size:10px;border-radius:50px;padding:2px 9px;font-weight:700;text-transform:uppercase;white-space:nowrap; }
+  .type-video    { background:#fce4ec;color:#c2185b; }
+  .type-article  { background:#e8f5e9;color:#388e3c; }
+  .type-exercise { background:#e3f2fd;color:#1976d2; }
+  .type-course   { background:#f3e5f5;color:#7b1fa2; }
+  .kg-link { stroke-width:1.8px;fill:none; }
+  .kg-link-prerequisite { stroke:#9c27b0;opacity:.7; }
+  .kg-link-related      { stroke:#42a5f5;opacity:.6;stroke-dasharray:5,3; }
+  .kg-node circle { stroke:#fff;stroke-width:2.5px;cursor:pointer; }
+  .kg-node.status-weak      circle { fill:#e53935; }
+  .kg-node.status-mastered  circle { fill:#43a047; }
+  .kg-node.status-focus     circle { fill:#fb8c00; }
+  .kg-node.status-untouched circle { fill:#bdbdbd; }
+  .kg-node text { font-size:11px;fill:#333;pointer-events:none;font-weight:500; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4" style="max-width:960px;">
+  <h4 class="fw-bold mb-1" style="color:var(--purple);">🗺️ Your Learning Path</h4>
+  <p class="text-muted mb-4" style="font-size:14px;">{{ recommendation.summary }}</p>
+
+  <div class="row g-4">
+    <div class="col-md-6">
+      {% for step in recommendation.learning_path %}
+      <div class="step-card {{ step.action }}">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <div class="d-flex align-items-center gap-2">
+            <span style="font-size:20px;font-weight:800;color:#ddd;">{{ step.order }}</span>
+            <span class="fw-bold" style="font-size:15px;">{{ step.label }}</span>
+            {% if step.accuracy is not none %}<span style="font-size:12px;color:#888;">({{ step.accuracy }}%)</span>{% endif %}
+          </div>
+          <span class="action-tag tag-{{ step.action }}">{{ step.action }}</span>
+        </div>
+        <p class="text-muted mb-1" style="font-size:13px;">{{ step.reason }}</p>
+        {% if step.what_to_do %}
+        <div style="font-size:13px;background:var(--surface);border-radius:8px;padding:8px 12px;margin-top:6px;border-left:3px solid #ddd;">
+          {{ step.what_to_do }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="col-md-6">
+      <div class="card-mm p-4 mb-4">
+        <h6 class="fw-bold mb-1" style="color:var(--purple);">🧠 Knowledge Graph</h6>
+        <p style="font-size:11px;color:#aaa;margin-bottom:8px;">
+          🔴 weak · 🟢 mastered · 🟠 focus · ⚪ untouched
+        </p>
+        <svg id="kg-svg" width="100%" height="280"></svg>
+      </div>
+
+      {% if recommendation.resources %}
+      <div class="card-mm p-4">
+        <h6 class="fw-bold mb-3" style="color:var(--purple);">📚 Resources</h6>
+        {% for topic, items in recommendation.resources.items() %}
+        <p class="fw-semibold mb-2" style="font-size:13px;color:var(--purple);">{{ topic }}</p>
+        {% for r in items %}
+        <a href="{{ r.url }}" target="_blank" rel="noopener" class="resource-link">
+          <span class="resource-type type-{{ r.type }}">{{ r.type }}</span>
+          <div>
+            <div style="font-size:13px;font-weight:600;">{{ r.title }}</div>
+            {% if r.description %}<div style="font-size:12px;color:var(--slate);">{{ r.description }}</div>{% endif %}
+          </div>
+        </a>
+        {% endfor %}
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="text-center mt-4">
+    <a href="/form" class="btn btn-purple me-2" style="border-radius:50px;padding:12px 32px;">Take Another Quiz →</a>
+    <a href="/dashboard" class="btn btn-outline-purple" style="border-radius:50px;padding:12px 32px;">Dashboard</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const nodes = {{ graph_nodes_json|safe }};
+  const edges = {{ graph_edges_json|safe }};
+  if(!nodes.length) return;
+  const svg = d3.select('#kg-svg');
+  const W = document.getElementById('kg-svg').parentElement.offsetWidth - 32;
+  const H = 280;
+  svg.attr('viewBox',`0 0 ${W} ${H}`).attr('width',W);
+  const sim = d3.forceSimulation(nodes)
+    .force('link',d3.forceLink(edges).id(d=>d.id).distance(80))
+    .force('charge',d3.forceManyBody().strength(-160))
+    .force('center',d3.forceCenter(W/2,H/2))
+    .force('y',d3.forceY(d=>H*0.15+(d.tier-1)/3*H*0.7).strength(.4))
+    .force('collision',d3.forceCollide(28));
+  const link = svg.append('g').selectAll('line').data(edges).join('line')
+    .attr('class',d=>`kg-link kg-link-${d.type}`);
+  const nodeG = svg.append('g').selectAll('g').data(nodes).join('g')
+    .attr('class',d=>`kg-node status-${d.status}`)
+    .call(d3.drag()
+      .on('start',(e,d)=>{if(!e.active)sim.alphaTarget(.3).restart();d.fx=d.x;d.fy=d.y;})
+      .on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y;})
+      .on('end',(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null;}));
+  const r = d=>12+(3-d.tier)*3;
+  nodeG.append('circle').attr('r',r);
+  nodeG.append('text').attr('dy',d=>-(r(d)+5)).attr('text-anchor','middle')
+    .text(d=>d.label.length>14?d.label.slice(0,13)+'…':d.label);
+  sim.on('tick',()=>{
+    link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    nodeG.attr('transform',d=>`translate(${Math.max(18,Math.min(W-18,d.x))},${Math.max(18,Math.min(H-18,d.y))})`);
+  });
+})();
+</script>
+{% endblock %}

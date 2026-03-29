@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Log In – MindMap{% endblock %}
+{% block body %}
+<div class="d-flex align-items-center justify-content-center" style="min-height:80vh;">
+  <div class="card-mm p-5" style="width:100%;max-width:440px;">
+    <div class="text-center mb-4">
+      <div style="font-size:36px;">⚡</div>
+      <h4 class="fw-bold mt-1" style="color:var(--purple);">Welcome back</h4>
+      <p class="text-muted" style="font-size:14px;">Log in to continue your learning journey</p>
+    </div>
+
+    <form method="POST" action="/login">
+      <div class="mb-3">
+        <label class="form-label fw-semibold" style="font-size:13px;">Username or Email</label>
+        <input name="username_or_email" type="text" class="form-control" placeholder="you@example.com" required
+               style="border-radius:10px;padding:12px;border-color:var(--border);">
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-semibold" style="font-size:13px;">Password</label>
+        <input name="password" type="password" class="form-control" placeholder="••••••••" required
+               style="border-radius:10px;padding:12px;border-color:var(--border);">
+      </div>
+      <button type="submit" class="btn btn-purple w-100" style="padding:13px;font-size:15px;border-radius:12px;">
+        Log In →
+      </button>
+    </form>
+
+    <p class="text-center text-muted mt-4" style="font-size:14px;">
+      Don't have an account? <a href="/register" style="color:var(--purple);font-weight:600;">Sign up free</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

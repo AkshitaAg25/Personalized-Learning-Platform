@@ -1,111 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Assessment – MindMap{% endblock %}
+{% block head %}
+<style>
+  .quiz-card { background:#fff;border-left:5px solid var(--purple);border-radius:12px;padding:22px;margin-bottom:18px;box-shadow:0 1px 6px rgba(0,0,0,0.07); }
+  .option-wrap { display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:9px;margin:6px 0;cursor:pointer;transition:.15s; }
+  .option-wrap:hover { background:var(--purple-pale);border-color:var(--purple); }
+  .option-wrap input { accent-color:var(--purple);width:16px;height:16px;cursor:pointer; }
+</style>
+{% endblock %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            line-height: 1.6;
-            padding: 20px;
-            max-width: 800px;
-            margin: auto;
-        }
+{% block body %}
+<div class="container py-4" style="max-width:760px;">
+  <div class="text-center mb-4">
+    <h4 class="fw-bold" style="color:var(--purple);">📝 Assessment</h4>
+    <div class="d-flex justify-content-center gap-2 flex-wrap">
+      <span style="background:var(--purple-mid);color:var(--purple);border-radius:50px;padding:4px 14px;font-size:13px;font-weight:600;">{{ subject }}</span>
+      {% if focus %}<span style="background:#e3f2fd;color:#1565c0;border-radius:50px;padding:4px 14px;font-size:13px;font-weight:600;">Focus: {{ focus }}</span>{% endif %}
+    </div>
+  </div>
 
-        h2 {
-            color: #6a1b9a;
-            text-align: center;
-        }
+  <form method="POST" action="/submit-quiz">
+    <input type="hidden" name="subject"  value="{{ subject }}">
+    <input type="hidden" name="focus"    value="{{ focus }}">
+    <input type="hidden" name="mastered" value="{{ mastered }}">
+    <input type="hidden" name="total"    value="{{ questions|length }}">
 
-        .question-box {
-            background: white;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border-left: 5px solid #6a1b9a;
-        }
-
-        label {
-            display: block;
-            margin: 10px 0;
-            cursor: pointer;
-            padding: 5px;
-            transition: background 0.3s;
-        }
-
-        label:hover {
-            background: #f3e5f5;
-        }
-
-        button {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            background-color: #6a1b9a;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        button:hover {
-            background-color: #4a148c;
-        }
-
-        /* Update your CSS to this */
-        .option-wrapper {
-            display: block;
-            margin: 8px 0;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .option-wrapper:hover {
-            background-color: #f3e5f5;
-            border-color: #6a1b9a;
-        }
-
-        /* Ensure the radio button is always clickable */
-        .option-wrapper input {
-            margin-right: 10px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-
-<body>
-    <h2>Assessment</h2>
-    <form method="POST" action="/submit-quiz">
-        <input type="hidden" name="subject" value="{{ subject }}">
-        <input type="hidden" name="difficulty" value="{{ difficulty }}">
-
-
-        {% for q in questions %}
-        {% set q_index = loop.index0 %}
-
-            <div class="question-box">
-                <p><strong>{{ loop.index }}. {{ q.question }}</strong></p>
-
-                {% for option in q.options %}
-                    <label>
-                        <input type="radio" name="q{{ q_index }}" value="{{ option }}" required>
-                        {{ option }}
-                    </label>
-                {% endfor %}
-            </div>
+    {% for q in questions %}
+    {% set i = loop.index0 %}
+    <div class="quiz-card">
+      <p class="fw-semibold mb-3" style="font-size:15px;">{{ loop.index }}. {{ q.question }}</p>
+      <input type="hidden" name="question{{ i }}" value="{{ q.question }}">
+      <input type="hidden" name="correct{{ i }}"  value="{{ q.answer }}">
+      {% for option in q.options %}
+      <label class="option-wrap">
+        <input type="radio" name="q{{ i }}" value="{{ option }}" required>
+        <span>{{ option }}</span>
+      </label>
+      {% endfor %}
+    </div>
     {% endfor %}
 
-        <button type="submit">Submit Quiz</button>
-    </form>
-</body>
-</html>
+    <div class="text-center mt-4">
+      <button type="submit" class="btn btn-purple" style="padding:14px 48px;font-size:16px;border-radius:50px;">
+        Submit Quiz →
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

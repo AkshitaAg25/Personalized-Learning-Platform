@@ -1,39 +1,218 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Performance Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-{% set subjects = {
-    '18': 'Computer Science',
-    '19': 'Mathematics',
-    '17': 'Science',
-    '23': 'History'
-} %}
+{% extends 'base.html' %}
+{% block title %}Dashboard – MindMap{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<style>
+  .stat-card { background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:20px; }
+  .subject-card { background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:20px;border-top:4px solid var(--purple);transition:.2s; }
+  .subject-card:hover { box-shadow:0 4px 20px rgba(106,27,154,.15); }
+  .level-pill { border-radius:50px;padding:3px 12px;font-weight:700;font-size:11px;text-transform:uppercase; }
+  .pill-beginner     { background:#fff3e0;color:#e65100; }
+  .pill-intermediate { background:#e3f2fd;color:#1565c0; }
+  .pill-advanced     { background:#e8f5e9;color:#2e7d32; }
+  .topic-row { display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f0f0f0; }
+  .topic-row:last-child { border:none; }
+  .mini-graph { width:100%;height:160px;overflow:visible; }
+  .kg-node-mini circle { stroke:#fff;stroke-width:2px; }
+  .kg-node-mini.status-weak     circle { fill:#e53935; }
+  .kg-node-mini.status-mastered circle { fill:#43a047; }
+  .kg-node-mini.status-focus    circle { fill:#fb8c00; }
+  .kg-node-mini.status-untouched circle { fill:#bdbdbd; }
+  .perf-bar { height:6px;border-radius:50px; }
+  th { font-size:11px;font-weight:700;text-transform:uppercase;color:#888;border:none!important; }
+  td { font-size:13px;vertical-align:middle; }
+  .empty-state { text-align:center;padding:60px 20px;color:#aaa; }
+</style>
+{% endblock %}
 
-<h2>Performance Dashboard</h2>
+{% block body %}
+<div class="container py-4" style="max-width:1100px;">
 
-<table border="1" cellpadding="10">
-    <tr>
-        <th>Subject</th>
-        <th>Difficulty</th>
-        <th>Score</th>
-        <th>Percentage</th>
-    </tr>
+  <!-- ── Header ─────────────────────────────────── -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-bold mb-0" style="color:var(--purple);">📊 Your Dashboard</h4>
+      <p class="text-muted mb-0" style="font-size:14px;">Hello, <strong>{{ user.username }}</strong> — here's your learning overview</p>
+    </div>
+    <a href="/form" class="btn btn-purple">+ New Quiz</a>
+  </div>
 
-    {% for row in records %}
-    <tr>
-        <td>{{ subjects.get(row[0], 'Unknown') }}</td>
-        <td>{{ row[1] }}</td>
-        <td>{{ row[2] }}/{{ row[3] }}</td>
-        <td>{{ (row[2] / row[3]) * 100 }}%</td>
-    </tr>
+  {% if not records %}
+  <div class="card-mm empty-state">
+    <div style="font-size:48px;">🎓</div>
+    <h5 class="mt-3">No quizzes yet</h5>
+    <p>Take your first AI-powered quiz to see your personalised knowledge graph and learning path.</p>
+    <a href="/form" class="btn btn-purple mt-2">Start Learning</a>
+  </div>
+  {% else %}
+
+  <!-- ── Summary stat cards ─────────────────────── -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card text-center">
+        <div style="font-size:28px;font-weight:800;color:var(--purple);">{{ records|length }}</div>
+        <div style="font-size:12px;color:#888;">Quizzes Taken</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card text-center">
+        <div style="font-size:28px;font-weight:800;color:var(--purple);">{{ subject_stats|length }}</div>
+        <div style="font-size:12px;color:#888;">Subjects Tracked</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card text-center">
+        <div style="font-size:28px;font-weight:800;color:var(--purple);">
+          {% if subject_stats %}{{ (subject_stats|map(attribute=1)|list|sum / subject_stats|length)|round(1) }}%{% else %}—{% endif %}
+        </div>
+        <div style="font-size:12px;color:#888;">Avg Score</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card text-center">
+        <div style="font-size:28px;font-weight:800;color:var(--purple);">
+          {{ records|selectattr(3,'equalto','advanced')|list|length }}
+        </div>
+        <div style="font-size:12px;color:#888;">Advanced Quizzes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Per-subject progress cards with mini graphs ── -->
+  <h6 class="fw-bold mb-3" style="color:var(--purple);">📚 Subject Progress</h6>
+  <div class="row g-3 mb-4">
+    {% for row in subject_stats %}
+    {% set subj = row[0] %}
+    {% set avg  = row[1] %}
+    {% set att  = row[2] %}
+    {% set best = row[3] %}
+    <div class="col-md-6 col-lg-4">
+      <div class="subject-card">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <div class="fw-bold" style="font-size:15px;">{{ subj }}</div>
+            <div style="font-size:12px;color:#888;">{{ att }} attempt{{ 's' if att != 1 }}</div>
+          </div>
+          <div class="text-end">
+            <div style="font-size:24px;font-weight:800;color:var(--purple);">{{ avg }}%</div>
+            <div style="font-size:11px;color:#aaa;">avg</div>
+          </div>
+        </div>
+        <!-- Score bar -->
+        <div class="bg-light rounded-pill mb-2" style="height:6px;overflow:hidden;">
+          <div class="perf-bar" style="width:{{ avg }}%;background:{% if avg >= 80 %}#43a047{% elif avg >= 50 %}#fb8c00{% else %}#e53935{% endif %};"></div>
+        </div>
+        <div class="d-flex justify-content-between" style="font-size:11px;color:#aaa;">
+          <span>Best: {{ best }}%</span>
+          <span>Avg: {{ avg }}%</span>
+        </div>
+
+        <!-- Mini knowledge graph for this subject -->
+        {% for snap in snapshots if snap[0] == subj %}
+        <div class="mt-3 pt-3" style="border-top:1px solid #f0f0f0;">
+          <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:4px;">KNOWLEDGE MAP</div>
+          <svg class="mini-graph" data-nodes="{{ snap[1]|e }}" data-edges="{{ snap[2]|e }}"></svg>
+        </div>
+        {% endfor %}
+
+        <div class="mt-2 text-end">
+          <a href="/form?subject={{ subj|urlencode }}" style="font-size:12px;color:var(--purple);font-weight:600;">Retake Quiz →</a>
+        </div>
+      </div>
+    </div>
     {% endfor %}
-</table>
+  </div>
 
-<br>
-<a href="/">Take Another Assessment</a>
+  <!-- ── Topic accuracy ─────────────────────────── -->
+  {% if topic_stats %}
+  <div class="card-mm p-4 mb-4">
+    <h6 class="fw-bold mb-3" style="color:var(--purple);">🎯 Topic Accuracy (all subjects)</h6>
+    {% for row in topic_stats %}
+    <div class="topic-row">
+      <span style="min-width:160px;font-size:13px;font-weight:500;">{{ row[0] }}</span>
+      <div class="flex-grow-1 bg-light rounded-pill" style="height:8px;overflow:hidden;">
+        <div class="perf-bar" style="width:{{ row[1] }}%;background:{% if row[1] >= 80 %}#43a047{% elif row[1] >= 50 %}#fb8c00{% else %}#e53935{% endif %};"></div>
+      </div>
+      <span style="min-width:40px;text-align:right;font-size:13px;font-weight:700;color:{% if row[1] >= 80 %}#2e7d32{% elif row[1] >= 50 %}#e65100{% else %}#c62828{% endif %};">{{ row[1] }}%</span>
+      <span style="font-size:11px;color:#aaa;min-width:60px;text-align:right;">{{ row[2] }}/{{ row[3] }} correct</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
-</body>
-</html>
+  <!-- ── Full quiz history ───────────────────────── -->
+  <div class="card-mm p-4">
+    <h6 class="fw-bold mb-3" style="color:var(--purple);">📋 Quiz History</h6>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr><th>Subject</th><th>Focus</th><th>Level</th><th>Score</th><th>Result</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+        {% for row in records %}
+        <tr>
+          <td class="fw-medium">{{ row[1] }}</td>
+          <td class="text-muted">{{ row[2] or '—' }}</td>
+          <td><span class="level-pill pill-{{ row[3] }}">{{ row[3]|capitalize if row[3] else '—' }}</span></td>
+          <td>{{ row[4] }}/{{ row[5] }}</td>
+          <td style="min-width:100px;">
+            <div class="d-flex align-items-center gap-2">
+              <div class="bg-light rounded-pill flex-grow-1" style="height:6px;overflow:hidden;">
+                <div class="perf-bar" style="width:{{ row[6] }}%;background:{% if row[6] >= 80 %}#43a047{% elif row[6] >= 50 %}#fb8c00{% else %}#e53935{% endif %};"></div>
+              </div>
+              <span style="font-size:12px;font-weight:600;">{{ row[6] }}%</span>
+            </div>
+          </td>
+          <td style="font-size:12px;color:#aaa;">{{ row[7][:10] if row[7] else '—' }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Render all mini knowledge graphs
+document.querySelectorAll('.mini-graph').forEach(svg => {
+  try {
+    const nodes = JSON.parse(svg.dataset.nodes || '[]');
+    const edges = JSON.parse(svg.dataset.edges || '[]');
+    if (!nodes.length) return;
+
+    const W = svg.parentElement.offsetWidth - 10;
+    const H = 160;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.setAttribute('width', W);
+
+    const colorMap = { weak:'#e53935', mastered:'#43a047', focus:'#fb8c00', untouched:'#bdbdbd' };
+
+    const s = d3.select(svg);
+    const sim = d3.forceSimulation(nodes)
+      .force('link',   d3.forceLink(edges).id(d=>d.id).distance(50))
+      .force('charge', d3.forceManyBody().strength(-80))
+      .force('center', d3.forceCenter(W/2, H/2))
+      .force('collision', d3.forceCollide(18));
+
+    const link = s.append('g').selectAll('line').data(edges).join('line')
+      .attr('stroke','#ddd').attr('stroke-width',1).attr('fill','none');
+
+    const node = s.append('g').selectAll('g').data(nodes).join('g')
+      .attr('class', d => `kg-node-mini status-${d.status}`);
+
+    node.append('circle').attr('r', 7).attr('fill', d=>colorMap[d.status]||'#bdbdbd').attr('stroke','#fff').attr('stroke-width',1.5);
+    node.append('text').attr('dy',-10).attr('text-anchor','middle').attr('font-size','9px').attr('fill','#555')
+      .text(d=>d.label.length>10?d.label.slice(0,9)+'…':d.label);
+
+    sim.on('tick',()=>{
+      link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+      node.attr('transform',d=>`translate(${Math.max(10,Math.min(W-10,d.x))},${Math.max(10,Math.min(H-10,d.y))})`);
+    });
+  } catch(e) {}
+});
+</script>
+{% endblock %}

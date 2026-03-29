@@ -1,33 +1,84 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap demo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  </head>
-  <body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}MindMap{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --purple: #6a1b9a;
+      --purple-light: #9c27b0;
+      --purple-pale: #f3e5f5;
+      --purple-mid: #ede7f6;
+      --ink: #0f172a;
+      --slate: #64748b;
+      --surface: #f8fafc;
+      --border: #e2e8f0;
+      --radius: 14px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    body { background: var(--surface); font-family: 'Segoe UI', system-ui, sans-serif; color: var(--ink); }
+    .navbar { background: #fff; border-bottom: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+    .navbar-brand { font-weight: 800; color: var(--purple) !important; font-size: 1.3rem; letter-spacing: -0.5px; }
+    .nav-link { color: var(--slate) !important; font-weight: 500; }
+    .nav-link:hover { color: var(--purple) !important; }
+    .btn-purple { background: var(--purple); color: #fff; border-radius: 50px; padding: 6px 20px; font-weight: 600; border: none; }
+    .btn-purple:hover { background: var(--purple-light); color: #fff; }
+    .btn-outline-purple { border: 1.5px solid var(--purple); color: var(--purple); border-radius: 50px; padding: 6px 20px; font-weight: 600; background: transparent; }
+    .btn-outline-purple:hover { background: var(--purple); color: #fff; }
+    .alert { border-radius: 10px; border: none; font-size: 14px; }
+    .card-mm { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--purple); color: #fff; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; }
+  </style>
+  {% block head %}
 
-    <!-- /*navbar bootstrap*/ -->
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/"style="font-weight: bold; color: #6f42c1;">MindMap</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+  {% endblock %}
+</head>
+<body>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="/">⚡ MindMap</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="/">Home</a>
-        </li>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+        {% if user %}
+        <li class="nav-item"><a class="nav-link" href="/form">New Quiz</a></li>
+        <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+        {% endif %}
       </ul>
-      <a href="/login" class="btn btn-dark btn-sm" role="button" style="background-color: #6f42c1; border-color: #6f42c1; border-radius: 50px; padding: 5px 20px; color: white;">Login</a>
+      <div class="d-flex align-items-center gap-2">
+        {% if user %}
+          <span class="avatar">{{ user.username[0]|upper }}</span>
+          <span class="text-muted" style="font-size:14px;">{{ user.username }}</span>
+          <a href="/logout" class="btn btn-outline-purple btn-sm">Log out</a>
+        {% else %}
+          <a href="/login"    class="btn btn-outline-purple btn-sm">Log in</a>
+          <a href="/register" class="btn btn-purple btn-sm">Sign up</a>
+        {% endif %}
+      </div>
     </div>
   </div>
 </nav>
-    {% block body %}
-        
-    {% endblock body %}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-  </body>
+
+<div class="container mt-3">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }} alert-dismissible fade show" role="alert">
+        {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+</div>
+
+{% block body %}
+
+{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
 </html>

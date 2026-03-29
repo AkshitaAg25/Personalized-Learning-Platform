@@ -2,7 +2,7 @@ from google import genai
 from google.genai import types
 import json
 
-client = genai.Client(api_key="google ai studio api key here")  #can not commit my api key because to google secuirty policy
+client = genai.Client(api_key="")  #can not commit my api key because to google secuirty policy
 
 def fetch_questions_gemini(subject, mastered, focus, amount=5):
     model_name = "gemini-2.5-flash"

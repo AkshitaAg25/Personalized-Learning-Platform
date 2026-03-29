@@ -1,23 +1,267 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Result</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}Your Results – MindMap{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<style>
+  .score-circle { width:120px;height:120px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto; }
+  .level-pill { border-radius:50px;padding:5px 16px;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.5px; }
+  .pill-beginner     { background:#fff3e0;color:#e65100; }
+  .pill-intermediate { background:#e3f2fd;color:#1565c0; }
+  .pill-advanced     { background:#e8f5e9;color:#2e7d32; }
+  .step-card { background:#fff;border-radius:12px;padding:18px 20px;margin-bottom:12px;border-left:5px solid var(--purple);box-shadow:0 1px 5px rgba(0,0,0,0.06); }
+  .step-card.review    { border-color:#e53935; }
+  .step-card.learn     { border-color:#1e88e5; }
+  .step-card.practice  { border-color:#fb8c00; }
+  .step-card.challenge { border-color:#43a047; }
+  .action-tag { font-size:10px;border-radius:50px;padding:3px 10px;font-weight:700;text-transform:uppercase; }
+  .tag-review    { background:#ffebee;color:#c62828; }
+  .tag-learn     { background:#e3f2fd;color:#1565c0; }
+  .tag-practice  { background:#fff3e0;color:#e65100; }
+  .tag-challenge { background:#e8f5e9;color:#2e7d32; }
+  .resource-link { display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:#fafafa;border-radius:10px;margin-bottom:8px;text-decoration:none;color:inherit;border:1px solid var(--border);transition:all .15s; }
+  .resource-link:hover { background:var(--purple-pale);border-color:var(--purple);color:inherit; }
+  .resource-type { font-size:10px;border-radius:50px;padding:2px 9px;font-weight:700;text-transform:uppercase;white-space:nowrap; }
+  .type-video    { background:#fce4ec;color:#c2185b; }
+  .type-article  { background:#e8f5e9;color:#388e3c; }
+  .type-exercise { background:#e3f2fd;color:#1976d2; }
+  .type-course   { background:#f3e5f5;color:#7b1fa2; }
+  /* D3 graph */
+  #kg-svg { width:100%;overflow:visible; }
+  .kg-link { stroke-width:1.8px;fill:none; }
+  .kg-link-prerequisite { stroke:#9c27b0;opacity:.7; }
+  .kg-link-related      { stroke:#42a5f5;opacity:.6;stroke-dasharray:5,3; }
+  .kg-node circle { stroke:#fff;stroke-width:2.5px;cursor:pointer;transition:r .2s; }
+  .kg-node circle:hover { filter:brightness(1.15); }
+  .kg-node text { font-size:11px;fill:#333;pointer-events:none;font-weight:500; }
+  .kg-node.status-weak     circle { fill:#e53935; }
+  .kg-node.status-mastered circle { fill:#43a047; }
+  .kg-node.status-focus    circle { fill:#fb8c00; }
+  .kg-node.status-untouched circle { fill:#bdbdbd; }
+  .graph-legend span { font-size:12px;margin-right:12px; }
+  .topic-bar { height:8px;border-radius:50px;transition:width .6s; }
+</style>
+{% endblock %}
 
-<h2>Quiz Result</h2>
-<p>Your Score: <strong>{{ score }}/{{ total }}</strong></p>
+{% block body %}
+<div class="container py-4" style="max-width:960px;">
 
-{% if score >= 4 %}
-    <p>Level: Advanced</p>
-{% elif score >= 2 %}
-    <p>Level: Intermediate</p>
-{% else %}
-    <p>Level: Beginner</p>
-{% endif %}
-<a href="/dashboard">View Performance Dashboard</a>
+  <!-- ── Score summary ─────────────────────────────────────── -->
+  <div class="card-mm p-4 mb-4">
+    <div class="row align-items-center g-4">
+      <div class="col-auto">
+        <div class="score-circle" style="background:var(--purple-mid);border:4px solid var(--purple);">
+          <span style="font-size:32px;font-weight:800;color:var(--purple);">{{ eval_result.score }}/{{ eval_result.total }}</span>
+          <span style="font-size:13px;color:var(--slate);">{{ eval_result.percentage }}%</span>
+        </div>
+      </div>
+      <div class="col">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="level-pill pill-{{ eval_result.level }}">{{ eval_result.level|capitalize }}</span>
+          <span class="text-muted" style="font-size:13px;">{{ eval_result.subject }}</span>
+          {% if eval_result.focus %}<span class="text-muted" style="font-size:13px;">· {{ eval_result.focus }}</span>{% endif %}
+        </div>
+        <p class="mb-2 fw-semibold" style="font-size:15px;">{{ recommendation.summary }}</p>
+        <div class="d-flex gap-3 flex-wrap">
+          {% if eval_result.weak_areas %}
+          <div>
+            <span style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;">Needs Work</span>
+            <div class="mt-1">{% for w in eval_result.weak_areas %}<span class="badge me-1" style="background:#ffebee;color:#c62828;border-radius:50px;font-weight:600;">{{ w }}</span>{% endfor %}</div>
+          </div>
+          {% endif %}
+          {% if eval_result.strong_areas %}
+          <div>
+            <span style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;">Strengths</span>
+            <div class="mt-1">{% for s in eval_result.strong_areas %}<span class="badge me-1" style="background:#e8f5e9;color:#2e7d32;border-radius:50px;font-weight:600;">{{ s }}</span>{% endfor %}</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
 
-<a href="/">Go Back</a>
+  <div class="row g-4 mb-4">
+    <!-- ── Topic Breakdown ────────────────────────── -->
+    <div class="col-md-5">
+      <div class="card-mm p-4 h-100">
+        <h6 class="fw-bold mb-3" style="color:var(--purple);">📊 Topic Breakdown</h6>
+        {% for topic, data in eval_result.topic_scores.items() %}
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1" style="font-size:13px;">
+            <span class="fw-medium">{{ topic }}</span>
+            <span style="font-weight:700;color:{% if data.accuracy >= 80 %}#2e7d32{% elif data.accuracy >= 50 %}#e65100{% else %}#c62828{% endif %};">{{ data.accuracy }}%</span>
+          </div>
+          <div class="bg-light rounded-pill" style="height:8px;overflow:hidden;">
+            <div class="topic-bar" style="width:{{ data.accuracy }}%;background:{% if data.accuracy >= 80 %}#43a047{% elif data.accuracy >= 50 %}#fb8c00{% else %}#e53935{% endif %};"></div>
+          </div>
+          <div style="font-size:11px;color:#aaa;margin-top:2px;">{{ data.correct }}/{{ data.total }} correct</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
 
-</body>
-</html>
+    <!-- ── Knowledge Graph ────────────────────────── -->
+    <div class="col-md-7">
+      <div class="card-mm p-4 h-100">
+        <h6 class="fw-bold mb-1" style="color:var(--purple);">🧠 Knowledge Graph</h6>
+        <div class="graph-legend mb-2">
+          <span>🔴 weak</span><span>🟢 mastered</span><span>🟠 focus</span><span>⚪ untouched</span>
+        </div>
+        <p style="font-size:11px;color:#aaa;margin-bottom:6px;">Purple arrows = prerequisite &nbsp;·&nbsp; Blue dashed = related</p>
+        <svg id="kg-svg" height="280"></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AI Learning Path ──────────────────────────────────── -->
+  <div class="card-mm p-4 mb-4">
+    <h6 class="fw-bold mb-1" style="color:var(--purple);">🗺️ Your Personalised Learning Path</h6>
+    <p class="text-muted mb-3" style="font-size:13px;">AI-generated based on your quiz performance and knowledge level</p>
+
+    {% if recommendation.learning_path %}
+      {% for step in recommendation.learning_path %}
+      <div class="step-card {{ step.action }}">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <div class="d-flex align-items-center gap-2">
+            <span style="font-size:18px;font-weight:800;color:#ccc;">{{ step.order }}</span>
+            <span class="fw-bold" style="font-size:15px;">{{ step.label }}</span>
+            {% if step.accuracy is not none %}<span style="font-size:12px;color:#888;">({{ step.accuracy }}%)</span>{% endif %}
+          </div>
+          <span class="action-tag tag-{{ step.action }}">{{ step.action }}</span>
+        </div>
+        <p class="text-muted mb-1" style="font-size:13px;">{{ step.reason }}</p>
+        {% if step.what_to_do %}
+        <div style="font-size:13px;background:var(--surface);border-radius:8px;padding:8px 12px;margin-top:6px;border-left:3px solid #ddd;">
+          {{ step.what_to_do }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% else %}
+      <p class="text-muted">No path generated yet. Try retaking the quiz.</p>
+    {% endif %}
+  </div>
+
+  <!-- ── Resources ─────────────────────────────────────────── -->
+  {% if recommendation.resources %}
+  <div class="card-mm p-4 mb-4">
+    <h6 class="fw-bold mb-3" style="color:var(--purple);">📚 Curated Resources</h6>
+    {% for topic, items in recommendation.resources.items() %}
+    <div class="mb-4">
+      <p class="fw-semibold mb-2" style="font-size:14px;color:var(--purple);">{{ topic }}</p>
+      {% for r in items %}
+      <a href="{{ r.url }}" target="_blank" rel="noopener" class="resource-link">
+        <span class="resource-type type-{{ r.type }}">{{ r.type }}</span>
+        <div class="flex-grow-1">
+          <div style="font-size:13px;font-weight:600;">{{ r.title }}</div>
+          {% if r.description %}<div style="font-size:12px;color:var(--slate);margin-top:2px;">{{ r.description }}</div>{% endif %}
+        </div>
+        {% if r.platform %}<span style="font-size:11px;color:#aaa;white-space:nowrap;">{{ r.platform }}</span>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ── Next Quiz CTA ─────────────────────────────────────── -->
+  <div class="card-mm p-4 text-center" style="background:linear-gradient(135deg,#6a1b9a,#9c27b0);color:#fff;border:none;">
+    <h6 class="fw-bold mb-1">Ready for your next challenge?</h6>
+    <p style="font-size:13px;opacity:.85;" class="mb-3">
+      Suggested: <strong>{{ recommendation.next_quiz.focus }}</strong> at <strong>{{ recommendation.next_quiz.suggested_difficulty }}</strong> level
+    </p>
+    <div class="d-flex gap-2 justify-content-center">
+      <a href="/form" class="btn btn-light fw-semibold" style="border-radius:50px;color:var(--purple);">Take Another Quiz →</a>
+      <a href="/dashboard" class="btn fw-semibold" style="border-radius:50px;border:1.5px solid rgba(255,255,255,.6);color:#fff;">View Dashboard</a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+  const nodes = {{ graph_nodes_json|safe }};
+  const edges = {{ graph_edges_json|safe }};
+  if (!nodes.length) return;
+
+  const container = document.getElementById('kg-svg');
+  const W = container.parentElement.offsetWidth - 48;
+  const H = 280;
+  container.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  container.setAttribute('width', W);
+
+  const svg = d3.select('#kg-svg');
+
+  // Arrow markers
+  svg.append('defs').selectAll('marker')
+    .data(['prereq','related']).join('marker')
+    .attr('id', d => `arrow-${d}`)
+    .attr('viewBox','0 -4 8 8').attr('refX',18).attr('refY',0)
+    .attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
+    .append('path')
+    .attr('d','M0,-4L8,0L0,4').attr('fill', d => d==='prereq'?'#9c27b0':'#42a5f5').attr('opacity',.7);
+
+  const sim = d3.forceSimulation(nodes)
+    .force('link',   d3.forceLink(edges).id(d=>d.id).distance(90).strength(.6))
+    .force('charge', d3.forceManyBody().strength(-180))
+    .force('center', d3.forceCenter(W/2, H/2))
+    .force('y',      d3.forceY(d => H*0.15 + (d.tier-1)/(3)*H*0.7).strength(.45))
+    .force('x',      d3.forceX(W/2).strength(.05))
+    .force('collision', d3.forceCollide(32));
+
+  const link = svg.append('g').selectAll('line')
+    .data(edges).join('line')
+    .attr('class', d => `kg-link kg-link-${d.type}`)
+    .attr('marker-end', d => `url(#arrow-${d.type==='prerequisite'?'prereq':'related'})`);
+
+  const nodeG = svg.append('g').selectAll('g')
+    .data(nodes).join('g')
+    .attr('class', d => `kg-node status-${d.status}`)
+    .call(d3.drag()
+      .on('start', (e,d)=>{ if(!e.active) sim.alphaTarget(.3).restart(); d.fx=d.x;d.fy=d.y; })
+      .on('drag',  (e,d)=>{ d.fx=e.x;d.fy=e.y; })
+      .on('end',   (e,d)=>{ if(!e.active) sim.alphaTarget(0); d.fx=null;d.fy=null; }));
+
+  const r = d => 12 + (3 - d.tier) * 3;
+
+  nodeG.append('circle').attr('r', r);
+
+  // Accuracy badge
+  nodeG.filter(d=>d.accuracy!==null&&d.accuracy!==undefined)
+    .append('text')
+    .attr('dy', d => r(d)+12)
+    .attr('text-anchor','middle')
+    .attr('fill','#999')
+    .attr('font-size','9px')
+    .text(d=>`${d.accuracy}%`);
+
+  nodeG.append('text')
+    .attr('dy', d => -(r(d)+5))
+    .attr('text-anchor','middle')
+    .text(d => d.label.length>16 ? d.label.slice(0,15)+'…' : d.label);
+
+  // Tooltip
+  const tip = d3.select('body').append('div')
+    .style('position','absolute').style('display','none')
+    .style('background','rgba(0,0,0,.8)').style('color','#fff')
+    .style('padding','6px 12px').style('border-radius','8px')
+    .style('font-size','12px').style('pointer-events','none').style('z-index','9999');
+
+  nodeG.on('mouseover', (e,d)=>{
+    tip.style('display','block').html(`<strong>${d.label}</strong><br>Status: ${d.status}<br>${d.accuracy!==null&&d.accuracy!==undefined?'Accuracy: '+d.accuracy+'%':''}`);
+  }).on('mousemove', e=>{
+    tip.style('left',(e.pageX+14)+'px').style('top',(e.pageY-10)+'px');
+  }).on('mouseout', ()=>tip.style('display','none'));
+
+  sim.on('tick', ()=>{
+    const pad = 20;
+    link
+      .attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+      .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    nodeG.attr('transform', d=>
+      `translate(${Math.max(pad,Math.min(W-pad,d.x))},${Math.max(pad,Math.min(H-pad,d.y))})`);
+  });
+})();
+</script>
+{% endblock %}
