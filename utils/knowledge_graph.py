@@ -1,18 +1,10 @@
-<<<<<<< HEAD
-=======
-
->>>>>>> b4f2303fb771362eeb60b8ef998b767cd93a7df3
 from __future__ import annotations
 import json
 import os
 import re
-<<<<<<< HEAD
 from dotenv import load_dotenv
 
 load_dotenv()  
-=======
-
->>>>>>> b4f2303fb771362eeb60b8ef998b767cd93a7df3
 
 def _word_match(a: str, b: str) -> bool:
     """True if a and b are the same topic (whole-word, not substring accident)."""
@@ -33,17 +25,10 @@ except ImportError:
     _GENAI_AVAILABLE = False
 
 
-<<<<<<< HEAD
 # ── Gemini client ──
 
 def _get_client():
     api_key = os.environ.get("GEMINI_API_KEY")
-=======
-# ── Gemini client ─────────────────────────────────────────────────────────────
-
-def _get_client():
-    api_key = os.environ.get("GEMINI_API_KEY", "google ai studio api key here")
->>>>>>> b4f2303fb771362eeb60b8ef998b767cd93a7df3
     if not _GENAI_AVAILABLE:
         return None
     try:
@@ -52,11 +37,7 @@ def _get_client():
         return None
 
 
-<<<<<<< HEAD
 # ── Prerequisite inference via Gemini ──
-=======
-# ── Prerequisite inference via Gemini ─────────────────────────────────────────
->>>>>>> b4f2303fb771362eeb60b8ef998b767cd93a7df3
 
 def _infer_prerequisites_gemini(topics: list[str], subject: str, mastered: str) -> list[dict]:
     """
@@ -111,11 +92,7 @@ Example output for topics ["Arrays", "Recursion", "Sorting"]:
         return []
 
 
-<<<<<<< HEAD
 # ── Tier computation from graph depth ──
-=======
-# ── Tier computation from graph depth ─────────────────────────────────────────
->>>>>>> b4f2303fb771362eeb60b8ef998b767cd93a7df3
 
 def _compute_tiers(topics: list[str], edges: list[dict]) -> dict[str, int]:
     """
@@ -161,11 +138,7 @@ def _compute_tiers(topics: list[str], edges: list[dict]) -> dict[str, int]:
     return tiers
 
 
-<<<<<<< HEAD
 # ── Status assignment ──
-=======
-# ── Status assignment ─────────────────────────────────────────────────────────
->>>>>>> b4f2303fb771362eeb60b8ef998b767cd93a7df3
 
 def _assign_status(
     topic: str,
@@ -201,11 +174,7 @@ def _assign_status(
     return "untouched"
 
 
-<<<<<<< HEAD
 # ── Level-aware entry point selection ──
-=======
-# ── Level-aware entry point selection ─────────────────────────────────────────
->>>>>>> b4f2303fb771362eeb60b8ef998b767cd93a7df3
 
 def _select_entry_points(nodes: list[dict], level: str) -> list[str]:
     """
@@ -235,12 +204,7 @@ def _select_entry_points(nodes: list[dict], level: str) -> list[str]:
     return pts
 
 
-<<<<<<< HEAD
 # ── Public API ──
-=======
-# ── Public API ────────────────────────────────────────────────────────────────
-
->>>>>>> b4f2303fb771362eeb60b8ef998b767cd93a7df3
 def build_knowledge_graph(evaluation_result: dict) -> dict:
     """
     Builds a knowledge graph entirely from the quiz's actual topics.
@@ -262,18 +226,10 @@ def build_knowledge_graph(evaluation_result: dict) -> dict:
 
     mastered_declared = [m.strip() for m in mastered_raw.split(",") if m.strip()]
 
-<<<<<<< HEAD
     # ── 1. Real topics from the quiz ──
     tested_topics = list(topic_scores.keys())
 
     # Also surface the user's declared mastered topics as nodes (even if not in the quiz) so the graph shows what they already know
-=======
-    # ── 1. Real topics from the quiz ─────────────────────────────────────────
-    tested_topics = list(topic_scores.keys())
-
-    # Also surface the user's declared mastered topics as nodes (even if not
-    # in the quiz) so the graph shows what they already know
->>>>>>> b4f2303fb771362eeb60b8ef998b767cd93a7df3
     for m in mastered_declared:
         if m and m not in tested_topics:
             tested_topics.append(m)
@@ -281,7 +237,6 @@ def build_knowledge_graph(evaluation_result: dict) -> dict:
     if not tested_topics:
         tested_topics = [subject]
 
-<<<<<<< HEAD
     # ── 2. Gemini-inferred edges ──
     edges = _infer_prerequisites_gemini(tested_topics, subject, mastered_raw)
 
@@ -289,15 +244,6 @@ def build_knowledge_graph(evaluation_result: dict) -> dict:
     tiers = _compute_tiers(tested_topics, edges)
 
     # ── 4. Build nodes with status + accuracy ──
-=======
-    # ── 2. Gemini-inferred edges ──────────────────────────────────────────────
-    edges = _infer_prerequisites_gemini(tested_topics, subject, mastered_raw)
-
-    # ── 3. Tier from graph depth ──────────────────────────────────────────────
-    tiers = _compute_tiers(tested_topics, edges)
-
-    # ── 4. Build nodes with status + accuracy ────────────────────────────────
->>>>>>> b4f2303fb771362eeb60b8ef998b767cd93a7df3
     nodes = []
     for topic in tested_topics:
         score_data = topic_scores.get(topic)
@@ -321,11 +267,7 @@ def build_knowledge_graph(evaluation_result: dict) -> dict:
             "accuracy": accuracy,
         })
 
-<<<<<<< HEAD
     # ── 5. Level-aware entry points ──
-=======
-    # ── 5. Level-aware entry points ───────────────────────────────────────────
->>>>>>> b4f2303fb771362eeb60b8ef998b767cd93a7df3
     entry_points = _select_entry_points(nodes, level)
 
     # Fallback: if nothing selected, pick all weak nodes

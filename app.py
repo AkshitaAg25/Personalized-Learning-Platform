@@ -1,6 +1,6 @@
 import sqlite3, os, json, functools
 from flask import Flask, render_template, request, session, redirect, url_for, flash
-from templates.geminiquizgenerate import fetch_questions_gemini
+from services.geminiquizgenerate import fetch_questions_gemini
 from utils.evaluation import evaluate_quiz
 from utils.knowledge_graph import build_knowledge_graph
 from utils.recommendation import build_recommendation_path
@@ -207,9 +207,13 @@ def recommendation():
         graph_edges_json=json.dumps(kg.get("edges",[])),
         user=current_user())
 
-from utils.init_db import init_db, DB_PATH as _DB_PATH
-if not os.path.exists(_DB_PATH):
+from utils.init_db import init_db
+
+# Always init DB on startup (safe — uses CREATE TABLE IF NOT EXISTS)
+try:
     init_db()
+except Exception as e:
+    print(f"DB init warning: {e}")
 
 if __name__ == "__main__":
     app.run(debug=True)
