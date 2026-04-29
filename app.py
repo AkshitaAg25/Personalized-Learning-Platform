@@ -11,8 +11,9 @@ app.secret_key = os.environ.get("SECRET_KEY", "mindmap-dev-secret-2025")
 DB_PATH = "database.db"
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")  # allows multiple readers + one writer
     return conn
 
 def login_required(f):
@@ -206,7 +207,9 @@ def recommendation():
         graph_edges_json=json.dumps(kg.get("edges",[])),
         user=current_user())
 
+from utils.init_db import init_db, DB_PATH as _DB_PATH
+if not os.path.exists(_DB_PATH):
+    init_db()
+
 if __name__ == "__main__":
-    if not os.path.exists(DB_PATH):
-        import utils.init_db
     app.run(debug=True)

@@ -1,8 +1,11 @@
 import sqlite3, os
+
 DB_PATH = os.path.join(os.path.dirname(__file__), "..", "database.db")
-conn = sqlite3.connect(DB_PATH)
-cur  = conn.cursor()
-cur.executescript("""
+
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    cur  = conn.cursor()
+    cur.executescript("""
 CREATE TABLE IF NOT EXISTS users (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     username      TEXT UNIQUE NOT NULL,
@@ -43,6 +46,10 @@ CREATE TABLE IF NOT EXISTS knowledge_snapshots (
     UNIQUE(user_id, subject),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
-""")
-conn.commit(); conn.close()
-print("Database initialised.")
+    """)
+    conn.commit()
+    conn.close()
+    print("Database initialised.")
+
+if __name__ == "__main__":
+    init_db()

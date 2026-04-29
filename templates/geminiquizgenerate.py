@@ -1,8 +1,12 @@
 from google import genai
 from google.genai import types
+import os
 import json
+from dotenv import load_dotenv
 
-client = genai.Client(api_key="")  #can not commit my api key because to google secuirty policy
+load_dotenv()
+
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 def fetch_questions_gemini(subject, mastered, focus, amount=5):
     model_name = "gemini-2.5-flash"

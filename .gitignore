@@ -1,5 +1,8 @@
 justcheckingnouse.py
 activate.bat
-procfile
-Personalized-Learning-Platform/templates/justcheckingnouse.py
 quiz_data.py
+.env
+database.db
+__pycache__/
+*.pyc
+*.pyo

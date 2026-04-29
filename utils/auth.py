@@ -8,8 +8,9 @@ def _hash(password: str) -> str:
     return hashlib.sha256((salt + password).encode()).hexdigest()
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
     return conn
 
 def register_user(username: str, email: str, password: str) -> tuple[bool, str]:
