@@ -63,18 +63,23 @@ Built using **Flask** and **Google Gemini API**, the platform integrates assessm
 ---
 
 ##  Project Structure
-  Personalized-Learning-Platform/
-│── app.py
-│── utils/
-│ ├── auth.py
-│ ├── evaluation.py
-│ ├── init_db.py
-│── knowledge_graph.py
-│── recommendation.py
-│── templates/
-│── static/
-│── database.db
-│── requirements.txt
+```Personalized-Learning-Platform/
+.
+├── app.py
+├── utils/
+│   ├── auth.py
+│   ├── evaluation.py
+│   ├── init_db.py
+│   ├── knowledge_graph.py
+│   └── recommendation.py
+├── services/
+│   ├── geminiquizgenerate.py
+│   └── question_api.py
+├── templates/
+├── static/
+├── database.db
+└── requirements.txt
+```
 
 ##  Workflow
 1. User registers or logs in  
@@ -92,5 +97,5 @@ Built using **Flask** and **Google Gemini API**, the platform integrates assessm
 
 
 ##  Authors
-Akshita Agarwal
+Akshita Agarwal  
 Jagrati Maheshwari
